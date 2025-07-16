@@ -1,24 +1,38 @@
 # main.py
-from crew import TransitoCrew
-from crewai import Task
+from crewai import Agent, Task, Crew
+from crew import CustomRagTool, extraer_articulos
+import os
 
-if __name__ == "__main__":
-    # Pregunta de prueba (puedes cambiarla por cualquier otra)
-    pregunta = "¿Qué es una acera?"
+# Ruta del PDF (relativa)
+pdf_path = os.path.join("documents", "Codigo-nacional-de-transito.pdf")
 
-    # Crear instancia de la crew
-    crew = TransitoCrew()
+# Extraer artículos
+articulos = extraer_articulos(pdf_path)
+herramienta = CustomRagTool(articulos)
 
-    # Ejecutar tarea con la pregunta
-    resultado = crew.kickoff(tasks=[
-        Task(
-            name="answer_question",
-            description="Responder pregunta sobre el Código Nacional de Tránsito",
-            agent=crew.responder(),  # especifica el agente
-            expected_output="Una respuesta legal clara y precisa.",
-            input=pregunta
-        )
-    ])
+# Crear agente
+responder = Agent(
+    role="Asistente legal de tránsito",
+    goal="Responder preguntas legales usando el Código de Tránsito de Colombia",
+    backstory="Especialista en normas de conducción, sanciones y regulación en Colombia.",
+    tools=[herramienta]
+)
 
-    print("\n Respuesta del asistente:\n")
-    print(resultado)
+# Crear tarea
+pregunta_usuario = "¿Qué es una acera?"
+tarea = Task(
+    description=f"Responde esta pregunta: {pregunta_usuario}",
+    expected_output="Respuesta legal clara y precisa para ciudadanos.",
+    agent=responder
+)
+
+# Crear y ejecutar Crew
+crew = Crew(
+    agents=[responder],
+    tasks=[tarea],
+    verbose=True
+)
+
+resultado = crew.kickoff()
+print("\n🔹 Respuesta del asistente:\n")
+print(resultado)

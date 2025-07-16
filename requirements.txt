@@ -1,7 +1,6 @@
-crewai
-crewai-tools
-transformers>=4.38.0
+crewai==0.141.0
 sentence-transformers
-torch>=2.0.0
+transformers
+torch
 faiss-cpu
 pymupdf
