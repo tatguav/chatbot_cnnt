@@ -1,9 +1,0 @@
-load_pdf:
-  description: "Cargar y procesar PDF del Código de Tránsito"
-  agent: ingestor
-  expected_output: "PDF procesado y disponible para RAG"
-
-answer_question:
-  description: "Responder preguntas sobre el Código"
-  agent: responder
-  expected_output: "Respuesta clara y formal basada en el Código"

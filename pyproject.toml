@@ -1,0 +1,23 @@
+[project]
+name = "chatbot_cnnt"
+version = "0.1.0"
+description = "CHATBOT_CNNT using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[tools]>=0.134.0,<1.0.0"
+]
+
+[project.scripts]
+chatbot_cnnt = "chatbot_cnnt.main:run"
+run_crew = "chatbot_cnnt.main:run"
+train = "chatbot_cnnt.main:train"
+replay = "chatbot_cnnt.main:replay"
+test = "chatbot_cnnt.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
