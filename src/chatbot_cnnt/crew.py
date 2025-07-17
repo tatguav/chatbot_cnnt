@@ -3,8 +3,13 @@ from crewai.project import CrewBase, agent, crew, task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from typing import List
 from crewai_tools import PDFSearchTool
+from dotenv import load_dotenv
 import os
 import sys
+
+# Load environment variables
+load_dotenv()
+
 # If you want to run a snippet of code before or after the crew starts,
 # you can use the @before_kickoff and @after_kickoff decorators
 # https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
@@ -16,27 +21,35 @@ class ChatbotCnnt():
     agents: List[BaseAgent]
     tasks: List[Task]
 
-    # Modelo LLM seguro por defecto
-    llm_model = os.getenv("MODEL", "HuggingFaceH4/zephyr-7b-alpha")
+    # Modelo LLM seguro por defecto - usando un modelo de chat compatible
+    llm_model = os.getenv("MODEL")
+    key = os.getenv("HF_TOKEN")
+    print(llm_model)
+    print(key)
 
-    # Validar existencia del token de Hugging Face
-    if not os.getenv("HUGGINGFACE_ACCESS_TOKEN"):
-        print("[ERROR] Falta la variable de entorno HUGGINGFACE_ACCESS_TOKEN. Por favor, agrégala a tu .env o entorno.")
-        sys.exit(1)
+
+    # Configuración del LLM de Hugging Face para agentes - estructura simplificada
+    llm_config = {
+        "provider": "huggingface",
+        "model": llm_model,
+        "api_key": key
+    }
+
+    # Configuración específica para PDFSearchTool (embedchain)
+    pdf_tool_config = {
+        "llm": {
+            "provider": "huggingface",
+            "model": llm_model,
+            "api_key": key
+        }
+    }
 
     pdf_tool = PDFSearchTool(
         pdf=os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
             'knowledge', 'Codigo-nacional-de-transito.pdf'
         ),
-        config=dict(
-            llm=dict(
-                provider="huggingface",
-                config=dict(
-                    model=llm_model
-                ),
-            ),
-        )
+        config=pdf_tool_config
     )
 
     # Learn more about YAML configuration files here:
@@ -50,13 +63,9 @@ class ChatbotCnnt():
         return Agent(
             config=self.agents_config['ingestor'], # type: ignore[index]
             tools=[self.pdf_tool],
-            llm=dict(
-                provider="huggingface",
-                config=dict(
-                    model=self.llm_model
-                ),
-            ),
-            verbose=True
+            llm=self.llm_config,
+            verbose=True,
+            allow_delegation=False
         )
 
     @agent
@@ -64,13 +73,9 @@ class ChatbotCnnt():
         return Agent(
             config=self.agents_config['responder'], # type: ignore[index]
             tools=[self.pdf_tool],
-            llm=dict(
-                provider="huggingface",
-                config=dict(
-                    model=self.llm_model
-                ),
-            ),
-            verbose=True
+            llm=self.llm_config,
+            verbose=True,
+            allow_delegation=False
         )
 
     # To learn more about structured task outputs,

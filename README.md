@@ -18,9 +18,23 @@ Next, navigate to your project directory and install the dependencies:
 ```bash
 crewai install
 ```
-### Customizing
 
-**Add your `OPENAI_API_KEY` into the `.env` file**
+## Configuration
+
+### Variables de Entorno
+
+Este proyecto utiliza modelos de Hugging Face. Necesitas configurar las siguientes variables de entorno:
+
+1. Copia el archivo `env.example` a `.env`:
+```bash
+cp env.example .env
+```
+
+2. Edita el archivo `.env` y configura:
+   - `HUGGINGFACE_ACCESS_TOKEN`: Tu token de acceso de Hugging Face (requerido)
+   - `MODEL`: El modelo de Hugging Face a usar (por defecto: HuggingFaceH4/zephyr-7b-alpha)
+
+### Customizing
 
 - Modify `src/chatbot_cnnt/config/agents.yaml` to define your agents
 - Modify `src/chatbot_cnnt/config/tasks.yaml` to define your tasks
