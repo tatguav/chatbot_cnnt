@@ -23,33 +23,35 @@ class ChatbotCnnt():
 
     # Modelo LLM seguro por defecto - usando un modelo de chat compatible
     llm_model = os.getenv("MODEL")
-    key = os.getenv("HF_TOKEN")
-    print(llm_model)
-    print(key)
+
 
 
     # Configuración del LLM de Hugging Face para agentes - estructura simplificada
-    llm_config = {
-        "provider": "huggingface",
-        "model": llm_model,
-        "api_key": key
-    }
+    llm = LLM(
+        model="ollama/llama3:70b",
+        base_url="http://localhost:11434"
+    )
 
-    # Configuración específica para PDFSearchTool (embedchain)
-    pdf_tool_config = {
-        "llm": {
-            "provider": "huggingface",
-            "model": llm_model,
-            "api_key": key
-        }
-    }
-
-    pdf_tool = PDFSearchTool(
-        pdf=os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-            'knowledge', 'Codigo-nacional-de-transito.pdf'
-        ),
-        config=pdf_tool_config
+    tool = PDFSearchTool(
+        config=dict(
+            llm=dict(
+                provider="ollama", # or google, openai, anthropic, llama2, ...
+                config=dict(
+                    model="llama2",
+                    # temperature=0.5,
+                    # top_p=1,
+                    # stream=true,
+                ),
+            ),
+            embedder=dict(
+                provider="google", # or openai, ollama, ...
+                config=dict(
+                    model="models/embedding-001",
+                    task_type="retrieval_document",
+                    # title="Embeddings",
+                ),
+            ),
+        )
     )
 
     # Learn more about YAML configuration files here:
@@ -62,7 +64,7 @@ class ChatbotCnnt():
     def ingestor(self) -> Agent:
         return Agent(
             config=self.agents_config['ingestor'], # type: ignore[index]
-            tools=[self.pdf_tool],
+            tools=[self.tool],
             llm=self.llm_config,
             verbose=True,
             allow_delegation=False
@@ -72,7 +74,7 @@ class ChatbotCnnt():
     def responder(self) -> Agent:
         return Agent(
             config=self.agents_config['responder'], # type: ignore[index]
-            tools=[self.pdf_tool],
+            tools=[self.tool],
             llm=self.llm_config,
             verbose=True,
             allow_delegation=False
